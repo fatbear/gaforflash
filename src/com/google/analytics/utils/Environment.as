@@ -1,18 +1,18 @@
 ﻿/*
  * Copyright 2008 Adobe Systems Inc., 2008 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Contributor(s):
  *   Zwetan Kjukov <zwetan@gmail.com>.
  *   Marc Alcaraz <ekameleon@gmail.com>.
@@ -23,15 +23,15 @@ package com.google.analytics.utils
     import com.google.analytics.core.ga_internal;
     import com.google.analytics.debug.DebugConfiguration;
     import com.google.analytics.external.HTMLDOM;
-    
+
     import core.strings.userAgent;
     import core.uri;
     import core.version;
-    
+
     import flash.system.Capabilities;
     import flash.system.Security;
     import flash.system.System;
-    
+
     /**
      * Environment provides informations for the local environment.
      */
@@ -39,13 +39,13 @@ package com.google.analytics.utils
     {
         private var _debug:DebugConfiguration;
         private var _dom:HTMLDOM;
-        
+
         private var _protocol:String;
         private var _appName:String;
         private var _appVersion:version;
         private var _userAgent:String;
         private var _url:String;
-        
+
         /**
          * Creates a new Environment instance.
          * @param url The URL of the SWF.
@@ -57,7 +57,7 @@ package com.google.analytics.utils
                                      debug:DebugConfiguration = null, dom:HTMLDOM = null )
         {
             var v:core.version;
-            
+
             if( app == "" )
             {
                 if( isAIR() )
@@ -69,7 +69,7 @@ package com.google.analytics.utils
                     app = "Flash";
                 }
             }
-            
+
             if( version == "" )
             {
                 v = flashVersion;
@@ -78,22 +78,22 @@ package com.google.analytics.utils
             {
                 v = getVersionFromString( version );
             }
-            
+
             _url        = url;
             _appName    = app;
             _appVersion = v;
-            
+
             _debug      = debug;
             _dom        = dom;
         }
-        
+
         /**
          * @private
          */
         private function _findProtocol():void
         {
             _protocol = "";
-            
+
             if( _url != "" )
             {
                 var url:uri = new uri( _url );
@@ -103,12 +103,12 @@ package com.google.analytics.utils
 
         /**
          * Indicates the name of the application.
-         */        
+         */
         public function get appName():String
         {
             return _appName;
         }
-        
+
         /**
          * @private
          */
@@ -117,7 +117,7 @@ package com.google.analytics.utils
             _appName = value;
             _defineUserAgent();
         }
-        
+
         /**
          * Indicates the version of the application.
          */
@@ -125,7 +125,7 @@ package com.google.analytics.utils
         {
             return _appVersion;
         }
-        
+
         /**
          * @private
          */
@@ -133,9 +133,9 @@ package com.google.analytics.utils
         {
             _appVersion = value;
             _defineUserAgent();
-            
+
         }
-        
+
         /**
          * Sets the stage reference value of the application.
          */
@@ -143,7 +143,7 @@ package com.google.analytics.utils
         {
             _url = value;
         }
-        
+
         /**
          * Indicates the location of swf.
          */
@@ -151,42 +151,61 @@ package com.google.analytics.utils
         {
             return _url;
         }
-        
+
         /**
          * Indicates the referrer value.
-         */        
+         */
         public function get referrer():String
         {
             var _referrer:String = _dom.referrer;
-            
+
             if( _referrer )
             {
                 return _referrer;
             }
-            
+
             if( protocol == "file" )
             {
                 return "localhost";
             }
-            
+
             return "";
         }
-        
+
         /**
          * Indicates the title of the document.
          */
         public function get documentTitle():String
         {
             var _title:String = _dom.title;
-            
+
             if( _title )
             {
                 return _title;
             }
-            
+
             return "";
         }
-        
+
+        /**
+         * Indicates the document domain name value.
+         */
+        public function get documentDomainName():String
+        {
+            if( (protocol == "http") ||
+                (protocol == "https") )
+            {
+                var _host:String = _dom.host.toLowerCase();
+
+                if( _host )
+                {
+                    return _host;
+                }
+            }
+
+            return "";
+        }
+
         /**
          * Indicates the local domain name value.
          */
@@ -198,15 +217,15 @@ package com.google.analytics.utils
                 var url:uri = new uri( _url.toLowerCase() );
                 return url.host;
             }
-            
+
             if( protocol == "file" )
             {
                 return "localhost";
             }
-            
+
             return "";
         }
-        
+
         /**
          * Indicates if the application is running in AIR.
          */
@@ -214,7 +233,7 @@ package com.google.analytics.utils
         {
             return Security.sandboxType == "application";
         }
-        
+
         /**
          * Indicates if the SWF is embeded in an HTML page.
          * @return <code class="prettyprint">true</code> if the SWF is embeded in an HTML page.
@@ -222,48 +241,48 @@ package com.google.analytics.utils
         public function isInHTML():Boolean
         {
             return Capabilities.playerType == "PlugIn" ;
-        }        
-        
+        }
+
         /**
          * Indicates the locationPath value.
-         */        
+         */
         public function get locationPath():String
         {
             var _pathname:String = _dom.pathname;
-            
+
             if( _pathname )
             {
                 return _pathname;
             }
-            
+
             return "";
         }
-        
+
         /**
          * Indicates the locationSearch value.
-         */         
+         */
         public function get locationSearch():String
         {
             var _search:String = _dom.search;
-            
+
             if( _search )
             {
                 return _search;
             }
-            
+
             return "";
         }
-        
+
         /**
-         * Returns the flash version object representation of the application. 
+         * Returns the flash version object representation of the application.
          * <p>This object contains the attributes major, minor, build and revision :</p>
          * <p><b>Example :</b></p>
          * <pre class="prettyprint">
          * import com.google.analytics.utils.Environment ;
-         * 
+         *
          * var info:Environment = new Environment( "http://www.domain.com" ) ;
          * var version:Object = info.flashVersion ;
-         * 
+         *
          * trace( version.major    ) ; // 9
          * trace( version.minor    ) ; // 0
          * trace( version.build    ) ; // 124
@@ -276,7 +295,7 @@ package com.google.analytics.utils
             var v:version = getVersionFromString( Capabilities.version.split( " " )[1], "," ) ;
             return v ;
         }
-        
+
         /**
          * Returns the language string as a lowercase two-letter language code from ISO 639-1.
          * @see Capabilities.language
@@ -285,7 +304,7 @@ package com.google.analytics.utils
         {
             var _lang:String = _dom.language;
             var lang:String  = Capabilities.language;
-            
+
             if( _lang )
             {
                 if( (_lang.length > lang.length) &&
@@ -294,10 +313,10 @@ package com.google.analytics.utils
                     lang = _lang;
                 }
             }
-            
+
             return lang;
         }
-        
+
         /**
          * Returns the internal character set used by the flash player
          * <p>Logic : by default flash player use unicode internally so we return UTF-8.</p>
@@ -318,7 +337,7 @@ package com.google.analytics.utils
             //default
             return "UTF-8" ;
         }
-        
+
         /**
          * Returns the operating system string.
          * <p><b>Note:</b> The flash documentation indicate those strings</p>
@@ -333,12 +352,12 @@ package com.google.analytics.utils
          * <p>Other strings we can obtain ( not documented : "Mac OS 10.5.4" , "Windows Vista")</p>
          * @return the operating system string.
          * @see Capabilities.os
-         */        
+         */
         public function get operatingSystem():String
         {
             return Capabilities.os ;
         }
-                        
+
         /**
          * Returns the player type.
          * <p><b>Note :</b> The flash documentation indicate those strings.</p>
@@ -348,22 +367,22 @@ package com.google.analytics.utils
          * <li><b>"StandAlone"</b> : for the stand-alone Flash Player.</li>
          * @return the player type.
          * @see Capabilities.playerType
-         */                       
+         */
         public function get playerType():String
         {
             return Capabilities.playerType;
         }
-        
+
         /**
          * Returns the platform, can be "Windows", "Macintosh" or "Linux"
          * @see Capabilities.manufacturer
-         */            
+         */
         public function get platform():String
         {
             var p:String = Capabilities.manufacturer;
             return p.split( "Adobe " )[1];
         }
-        
+
         /**
          * Indicates the Protocols object of this local info.
          */
@@ -373,19 +392,19 @@ package com.google.analytics.utils
             {
                 _findProtocol();
             }
-            
+
             return _protocol;
         }
-        
+
         /**
          * Indicates the height of the screen.
          * @see Capabilities.screenResolutionY
-         */        
+         */
         public function get screenHeight():Number
         {
             return Capabilities.screenResolutionY;
-        }        
-        
+        }
+
         /**
          * Indicates the width of the screen.
          * @see Capabilities.screenResolutionX
@@ -394,9 +413,9 @@ package com.google.analytics.utils
         {
             return Capabilities.screenResolutionX;
         }
-                
+
         /**
-         * In AIR we can use flash.display.Screen to directly get the colorDepth property 
+         * In AIR we can use flash.display.Screen to directly get the colorDepth property
          * in flash player we can only access screenColor in flash.system.Capabilities.
          * <p>Some ref : <a href="http://en.wikipedia.org/wiki/Color_depth">http://en.wikipedia.org/wiki/Color_depth</a></p>
          * <li>"color" -> 16-bit or 24-bit or 32-bit</li>
@@ -429,26 +448,26 @@ package com.google.analytics.utils
                     color = "24" ;
                 }
             }
-            
+
             var _colorDepth:String = _dom.colorDepth;
-            
+
             if( _colorDepth )
             {
                 color = _colorDepth;
             }
-            
+
             return color;
         }
-        
+
         private function _defineUserAgent():void
         {
             _userAgent = core.strings.userAgent( appName + "/" + appVersion.toString(4) );
         }
-        
+
         /**
          * Defines a custom user agent.
-         * <p>For case where the user would want to define its own application name and version 
-         * it is possible to change appName and appVersion which are in sync with 
+         * <p>For case where the user would want to define its own application name and version
+         * it is possible to change appName and appVersion which are in sync with
          * applicationProduct and applicationVersion properties.</p>
          */
         public function get userAgent():String
@@ -457,10 +476,10 @@ package com.google.analytics.utils
             {
                  _defineUserAgent();
             }
-            
+
             return _userAgent;
         }
-        
+
         /**
          * @private
          */
@@ -468,6 +487,6 @@ package com.google.analytics.utils
         {
             _userAgent = custom;
         }
-        
+
     }
 }
