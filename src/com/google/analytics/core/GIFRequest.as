@@ -405,7 +405,7 @@ package com.google.analytics.core
                  variables = new Variables();
              }
 
-             variables.URIencode = false;
+             variables.URIencode = true;
              variables.pre  = [ "utmwv", "utmn", "utmhn", "utmt", "utme",
                                 "utmcs", "utmsr", "utmsc", "utmul", "utmje",
                                 "utmfl", "utmdt", "utmhid", "utmr", "utmp" ];
@@ -451,8 +451,13 @@ package com.google.analytics.core
 
                     if( _info.domainName != "" )
                     {
-                        variables.utmhn = _info.domainName;
-                    }
+                        if( variables.utmhn != null || variables.utmhn != "" )
+						{
+							variables.utmhn = utmhn;
+						} else {
+							variables.utmhn = _info.documentDomainName; 
+						}
+					}
 
                     if( _config.sampleRate < 1 )
                     {
