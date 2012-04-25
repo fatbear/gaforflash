@@ -108,7 +108,7 @@ package com.google.analytics.core
          */
         public function get utmn():String
         {
-            return generate32bitRandom() as String;
+            return String(generate32bitRandom());
         }
 
         /**
@@ -452,12 +452,12 @@ package com.google.analytics.core
                     if( _info.domainName != "" )
                     {
                         if( variables.utmhn != null || variables.utmhn != "" )
-						{
-							variables.utmhn = utmhn;
-						} else {
-							variables.utmhn = _info.documentDomainName; 
-						}
-					}
+                        {
+                            variables.utmhn = utmhn;
+                        } else {
+                            variables.utmhn = _info.documentDomainName;
+                        }
+                    }
 
                     if( _config.sampleRate < 1 )
                     {
@@ -529,7 +529,7 @@ package com.google.analytics.core
                              }
 
                              variables.utmac = utmac;
-                             variables.utmcc = encodeURIComponent(utmcc);
+                             variables.utmcc = utmcc;
 
                              //remoteImage.data = variables;
                              remoteImage.url +=  "?"+variables.toString();
