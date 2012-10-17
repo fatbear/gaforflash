@@ -195,7 +195,14 @@ package com.google.analytics.utils
             if( (protocol == "http") ||
                 (protocol == "https") )
             {
-                var _host:String = _dom.host.toLowerCase();
+				if (_dom.inIframe)
+				{
+					var _host:String = _dom.parentHost.toLowerCase();
+				}
+				else
+				{
+					var _host:String = _dom.host.toLowerCase();
+				}
 
                 if( _host )
                 {
@@ -248,7 +255,14 @@ package com.google.analytics.utils
          */
         public function get locationPath():String
         {
-            var _pathname:String = _dom.pathname;
+			if (_dom.inIframe)
+			{
+				var _pathname:String = _dom.parentPathname;
+			}
+			else
+			{
+				var _pathname:String = _dom.pathname;
+			}
 
             if( _pathname )
             {
@@ -263,7 +277,14 @@ package com.google.analytics.utils
          */
         public function get locationSearch():String
         {
-            var _search:String = _dom.search;
+			if (_dom.inIframe)
+			{
+				var _search:String = _dom.parentSearch;
+			}
+			else
+			{
+				var _search:String = _dom.search;
+			}
 
             if( _search )
             {

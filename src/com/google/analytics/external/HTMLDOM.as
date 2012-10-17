@@ -21,7 +21,8 @@
 package com.google.analytics.external
 {
     import com.google.analytics.debug.DebugConfiguration;
-    
+
+	import core.uri;
     
     /**
      * Proxy access to HTML Document Object Model.
@@ -39,6 +40,13 @@ package com.google.analytics.external
         private var _search:String;
         private var _referrer:String;
         private var _title:String;
+		private var _inIframe:Boolean;
+		private var _parentUri:uri;
+        private var _parentHost:String;
+        private var _parentLocation:String;
+        private var _parentPathname:String;
+        private var _parentProtocol:String;
+        private var _parentSearch:String;
         
         /**
          * The cache properties Javascript injection.
@@ -59,8 +67,22 @@ package com.google.analytics.external
                             obj.search       = document.location.search;
                             obj.referrer     = document.referrer;
                             obj.title        = document.title;
+							obj.inIframe     = window.location != window.parent.location;
                         
                         return obj;
+                    }
+                ]]>
+         </script>;
+
+        /**
+         * The cache properties Javascript injection.
+         */
+        public static var in_iframe_js:XML =
+        <script>
+            <![CDATA[
+                    function()
+                    {
+                        return window.location != window.parent.location;
                     }
                 ]]>
          </script>;
@@ -97,6 +119,17 @@ package com.google.analytics.external
                 _search       = obj.search;
                 _referrer     = obj.referrer;
                 _title        = obj.title;
+                _inIframe     = obj.inIframe;
+
+				if (_inIframe)
+				{
+					_parentUri = new uri( _referrer );
+			        _parentHost      = _parentUri.authority;
+			        _parentLocation  = _referrer;
+			        _parentPathname  = _parentUri.path;
+			        _parentProtocol  = _parentUri.scheme;
+			        _parentSearch    = _parentUri.queryRaw;
+				}
             }
         }
         
@@ -332,7 +365,165 @@ package com.google.analytics.external
             
             return _title;
         }
-             
 
+        /**
+         * Returns whether you are in an iframe or not.
+         * @return a boolean, true if in an iframe false if not.
+         */
+        public function get inIframe():Boolean
+        {
+            if( _inIframe )
+            {
+                return _inIframe;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+            _inIframe = call( in_iframe_js );
+            
+            return _inIframe;
+        }
+
+        /**
+         * Returns a uri object for the parent window when in an iframe
+         * @return a boolean, true if in an iframe false if not.
+         */
+        public function get parentUri():uri
+        {
+            if( _parentUri )
+            {
+                return _parentUri;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+				_parentUri = new uri( _referrer )
+			}
+            
+            return _parentUri;
+        }
+
+        /**
+         * Determinates the 'host' String value from the parent window when in an iframe.
+         */
+        public function get host():String
+        {
+            if( _parentHost )
+            {
+                return _parentHost;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+	        	_parentHost = _parentUri.authority;
+			}
+            
+            return _parentHost;
+        }
+
+        /**
+         * Determinates the 'location' String value from the parent window when in an iframe.
+         */
+        public function get parentLocation():String
+        {
+            if( _parentLocation )
+            {
+                return _parentLocation;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+	        	_parentLocation = _referrer;
+			}
+            
+            return _parentLocation;
+        }
+
+        /**
+         * Determinates the 'path' String value from the parent window when in an iframe.
+         */
+        public function get parentPathname():String
+        {
+            if( _parentPathname )
+            {
+                return _parentPathname;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+	        	_parentPathname = _parentUri.path;
+			}
+            
+            return _parentPathname;
+        }
+
+        /**
+         * Determinates the 'protocol' String value from the parent window when in an iframe.
+         */
+        public function get parentProtocol():String
+        {
+            if( _parentProtocol )
+            {
+                return _parentProtocol;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+	        	_parentProtocol = _parentUri.scheme;
+			}
+            
+            return _parentProtocol;
+        }
+
+        /**
+         * Determinates the 'query string' String value from the parent window when in an iframe.
+         */
+        public function get parentSearch():String
+        {
+            if( _parentSearch )
+            {
+                return _parentSearch;
+            }
+            
+            if( !isAvailable() )
+            {
+                return null;
+            }
+
+			if (_inIframe)
+			{
+	        	_parentSearch = _parentUri.queryRaw;
+			}
+            
+            return _parentSearch;
+        }
     }
 }
