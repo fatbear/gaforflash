@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name="eden" default="main" basedir=".">
-    
+
     <target name="clean">
         <delete dir="${basedir}/${release.dir}" />
         <delete dir="${basedir}/${asdoc.output}" />
     </target>
-    
+
     <target name="before">
         <mkdir dir="${basedir}/${release.dir}" />
         <mkdir dir="${basedir}/${asdoc.output}" />
     </target>
-    
+
     <target name="main" depends="clean,before,getrev,info,build-doc,build-swc,build-swc-debug,after">
-        
+
     </target>
 
     <target name="getrev">
@@ -57,7 +57,7 @@
             <source-path path-element="${basedir}/${project.src}" />
             <external-library-path dir="${basedir}/${project.lib-swc}/" append="true">
                <include name="logd.swc"/>
-               <include name="core.swc"/>
+               <include name="as3corelib.swc"/>
             </external-library-path>
             <exclude-sources path-element="${basedir}/${project.src}/gaforflash.as" />
             <exclude-sources path-element="${basedir}/${project.src}/gaforflash_test.as" />
@@ -83,7 +83,7 @@
             <compute-digest>false</compute-digest>
             <external-library-path dir="${basedir}/${project.lib-swc}/" append="true">
                <include name="logd.swc"/>
-               <include name="core.swc"/>
+               <include name="as3corelib.swc"/>
             </external-library-path>
             <source-path path-element="${basedir}/${project.src}" />
             <include-sources dir="${basedir}/${project.src}/com/google/analytics" includes="**/*.as" />
@@ -111,7 +111,7 @@
             <compute-digest>false</compute-digest>
             <external-library-path dir="${basedir}/${project.lib-swc}/" append="true">
                <include name="logd.swc"/>
-               <include name="core.swc"/>
+               <include name="as3corelib.swc"/>
             </external-library-path>
             <source-path path-element="${basedir}/${project.src}" />
             <include-sources dir="${basedir}/${project.src}/com/google/analytics" includes="**/*.as" />
@@ -127,11 +127,11 @@
         <copy todir="${basedir}/${release.dir}/doc">
             <fileset dir="${basedir}/${asdoc.output}"/>
         </copy>
-        
+
         <copy file="changelog.txt" todir="${basedir}/${release.dir}"/>
-        
+
         <zip destfile="${basedir}/${release.dir}/${project.name}-${project.fullversion}.zip"
              basedir="${basedir}/${release.dir}"/>
     </target>
-    
+
 </project>
