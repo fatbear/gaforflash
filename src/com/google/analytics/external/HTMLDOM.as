@@ -365,7 +365,7 @@ package com.google.analytics.external
 
             if( !isAvailable() )
             {
-                return null;
+                return false;
             }
 
             _inIframe = call( in_iframe_js );

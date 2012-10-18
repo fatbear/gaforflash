@@ -1,18 +1,18 @@
-﻿﻿﻿/*
+﻿/*
  * Copyright 2008 Adobe Systems Inc., 2008 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Contributor(s):
  *   Zwetan Kjukov <zwetan@gmail.com>.
  *   Marc Alcaraz <ekameleon@gmail.com>.
@@ -21,26 +21,26 @@
 package com.google.analytics.external
 {
     import com.google.analytics.debug.DebugConfiguration;
-    
+
     import flash.external.ExternalInterface;
     import flash.system.Capabilities;
-    
+
     /**
      * Javascript proxy access class.
      */
     public class JavascriptProxy
     {
-        
+
         /**
          * @private
          */
         private var _debug:DebugConfiguration;
-        
+
         /**
          * @private
          */
         private var _notAvailableWarning:Boolean = true;
-        
+
         /**
          * The hasProperty Javascript injection.
          */
@@ -75,8 +75,8 @@ package com.google.analytics.external
                     }
                 ]]>
             </script>;
-        
-        
+
+
         /**
          * The setProperty Javascript injection.
          */
@@ -103,16 +103,16 @@ package com.google.analytics.external
                         {
                             target = target[ paths[i] ] ;
                         }
-                        
+
                         target[ prop ] = value ;
                     }
                 ]]>
             </script>;
-        
+
         /**
          * The setPropertyReference Javascript injection.
          */
-        public static var setPropertyRef_js:XML = 
+        public static var setPropertyRef_js:XML =
             <script>
                 <![CDATA[
                     function( path , target )
@@ -159,9 +159,9 @@ package com.google.analytics.external
                     }
                 ]]>
             </script>;
-                
+
         /////
-        
+
         /**
          * Creates a new JavascriptProxy instance.
          * @param debug The DebugConfiguration reference of this object.
@@ -170,7 +170,7 @@ package com.google.analytics.external
         {
             _debug = debug;
         }
-        
+
         /**
          * Call a Javascript injection block (String or XML) with parameters and return the result.
          */
@@ -188,11 +188,11 @@ package com.google.analytics.external
                         if (args.length > 0)
                         {
                             output += args.join(",");
-                        } 
+                        }
                         output += " )";
                         _debug.info( output );
                     }
-                    
+
                     args.unshift( functionName );
                     return ExternalInterface.call.apply( ExternalInterface, args );
                 }
@@ -213,7 +213,7 @@ package com.google.analytics.external
             }
             return null;
         }
-        
+
         /**
          * Execute a Javascript injection block (String or XML) without any parameters and without return values.
          */
@@ -240,16 +240,16 @@ package com.google.analytics.external
                     }
                 }
             }
-        }        
-        
+        }
+
         /**
          * Returns the value property defines with the passed-in name value.
          * @return the value property defines with the passed-in name value.
-         */        
+         */
         public function getProperty( name:String ):*
         {
             /* note:
-               we use a little trick here 
+               we use a little trick here
                we can not diretly get a property from JS
                we can only call a function
                so we use valueOf() to automatically get the property
@@ -257,31 +257,31 @@ package com.google.analytics.external
             */
             return call( name + ".valueOf" ); //ExternalInterface.call( name + ".valueOf" ) ;
         }
-        
+
         /**
          * Returns the String property defines with the passed-in name value.
          * @return the String property defines with the passed-in name value.
          */
         public function getPropertyString( name:String ):String
         {
-            return call( name + ".toString" ); 
+            return call( name + ".toString" );
         }
-        
+
         /**
          * Indicates if the specified path object exist.
          */
         public function hasProperty( path:String ):Boolean
         {
-            return call( hasProperty_js, path ); 
-        }        
-        
+            return call( hasProperty_js, path );
+        }
+
         /**
          * Indicates if the javascript proxy is available.
          */
         public function isAvailable():Boolean
         {
             var available:Boolean = ExternalInterface.available;
-            
+
             if( available && (Capabilities.playerType == "External") )
             {
                 /* note:
@@ -291,7 +291,7 @@ package com.google.analytics.external
                 */
                 available = false;
             }
-            
+
             /* note:
                we want to notify only once that ExternalInterface is not available.
             */
@@ -300,18 +300,18 @@ package com.google.analytics.external
                 _debug.warning( "ExternalInterface is not available." );
                 _notAvailableWarning = false;
             }
-            
+
             return available;
         }
-        
+
         /**
          * Creates a JS property.
          */
         public function setProperty( path:String, value:* ):void
         {
-            call( setProperty_js, path, value ); 
+            call( setProperty_js, path, value );
         }
-        
+
         /**
          * Creates a JS property by reference.
          */
@@ -319,6 +319,6 @@ package com.google.analytics.external
         {
             call( setPropertyRef_js, path, target );
         }
-        
+
     }
 }

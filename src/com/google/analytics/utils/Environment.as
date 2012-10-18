@@ -195,13 +195,15 @@ package com.google.analytics.utils
             if( (protocol == "http") ||
                 (protocol == "https") )
             {
+				var _host:String;
+
 				if (_dom.inIframe)
 				{
-					var _host:String = _dom.parentHost.toLowerCase();
+					_host = _dom.parentHost.toLowerCase();
 				}
 				else
 				{
-					var _host:String = _dom.host.toLowerCase();
+					_host = _dom.host.toLowerCase();
 				}
 
                 if( _host )
