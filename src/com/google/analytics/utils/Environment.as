@@ -257,16 +257,9 @@ package com.google.analytics.utils
          */
         public function get locationPath():String
         {
-			if (_dom.inIframe)
-			{
-				var _pathname:String = _dom.parentPathname;
-			}
-			else
-			{
-				var _pathname:String = _dom.pathname;
-			}
+			var _pathname:String = (_dom.inIframe) ? _dom.parentPathname : _dom.pathname;
 
-            if( _pathname )
+			if( _pathname )
             {
                 return _pathname;
             }
@@ -279,14 +272,7 @@ package com.google.analytics.utils
          */
         public function get locationSearch():String
         {
-			if (_dom.inIframe)
-			{
-				var _search:String = _dom.parentSearch;
-			}
-			else
-			{
-				var _search:String = _dom.search;
-			}
+			var _search:String = (_dom.inIframe) ? _dom.parentSearch : _dom.search;
 
             if( _search )
             {
