@@ -35,94 +35,26 @@ package com.google.analytics.v4
         private var _account:String;
         private var _debug:DebugConfiguration;
         private var _proxy:JavascriptProxy;
-        
-        private var _hasGATracker:Boolean = false ;
-        private var _jsContainer:String   = "_GATracker" ;
+
+        private var _jsContainer:String   = "_gaq" ;
         
         ///// javascript injection with E4X        
         
-        private static var _checkGAJS_js:XML = 
+        private static var _checkAndLoadGAJS_js:XML = 
         <script>
             <![CDATA[
                 function()
                 {
-                    if( _gat && _gat._getTracker )
-                    {
-                        return true;
+					window._gaq = window._gaq || [];
+                    if (typeof window._gat == "undefined" || typeof window._gat._getTracker == "undefined") {
+                        var ga = document.createElement("script");
+                        ga.type ="text/javascript";
+						ga.async = true;
+                        ga.src = ("https:" == document.location.protocol ?
+                              "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+                        var s = document.getElementsByTagName("script")[0];
+                        s.parentNode.insertBefore(ga, s);
                     }
-                    return false;
-                }
-            ]]>
-        </script>; 
-        
-        private static var _checkValidTrackingObject_js:XML =
-        <script>
-            <![CDATA[
-                function(acct)
-                {
-                    if( _GATracker[acct] && (_GATracker[acct]._getAccount) )
-                    {
-                        return true ;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            ]]>
-        </script>;
-        
-        private static var _createTrackingObject_js:XML =
-        <script>
-            <![CDATA[
-                function( acct )
-                {
-                    _GATracker[acct] = _gat._getTracker(acct);
-                }
-            ]]>
-        </script>;
-                  
-        private static var _injectTrackingObject_js:XML =
-        <script>
-            <![CDATA[
-                function()
-                {
-                    try 
-                    {
-                        _GATracker
-                    }
-                    catch(e) 
-                    {
-                        _GATracker = {};
-                    }
-                }
-            ]]>
-        </script>;
-        
-        private static var _linkTrackingObject_js:XML =
-        <script>
-            <![CDATA[
-                function( container , target )
-                {
-                    var targets ;
-                    var name ;
-                    if( target.indexOf(".") > 0 )
-                    {
-                        targets = target.split(".");
-                        name    = targets.pop();
-                    }
-                    else
-                    {
-                        targets = [];
-                        name    = target;
-                    }
-                    var ref   = window;
-                    var depth = targets.length;
-                    for( var j = 0 ; j < depth ; j++ )
-                    {
-                        ref = ref[ targets[j] ] ;
-                    }
-                    window[container][target] = ref[name] ;
                 }
             ]]>
         </script>;
@@ -131,12 +63,9 @@ package com.google.analytics.v4
         
         /**
          * Creates a new Bridge instance.
-         * If the parameter is a correct account id we assume user wants to create a new JS tracking object
-         * Otherwise we assume the value is the parameter of an existing JS object the users wants to track against
-         * We then to check if that object actually exists in DOM and is a GA tracking object. If object doesn't exits
-         * an Error is thrown
+         * The parameter must be a correct account id otherwise an Error is thrown
          * 
-         * @param account Urchin Account to record metrics in.
+         * @param account GA Account id to record metrics in.
          */
         public function Bridge( account:String, debug:DebugConfiguration, jsproxy:JavascriptProxy )
         {
@@ -144,47 +73,22 @@ package com.google.analytics.v4
             _debug   = debug;
             _proxy   = jsproxy;
             
-            if( !_checkGAJS() )
-            {
-                var msg0:String = "";
-                    msg0 += "ga.js not found, be sure to check if\n";
-                    msg0 += "<script src=\"http://www.google-analytics.com/ga.js\"></script>\n";
-                    msg0 += "is included in the HTML.";
-                _debug.warning( msg0 );
-                throw new Error( msg0 );
-            }
-            
-            if( !_hasGATracker )
-            {
-                if( _debug.javascript && _debug.verbose )
-                {
-                    var msg1:String = ""; 
-                        msg1 += "The Google Analytics tracking code was not found on the container page\n";
-                        msg1 += "we create it";
-                    _debug.info( msg1, VisualDebugMode.advanced );
-                }
-                _injectTrackingObject();
-            }
-            
+			// Make sure we load the ga js library
+			_checkAndLoadGAJS();
+
+			// And let's set the account
             if( validateAccount( account ) )
             {
-                _createTrackingObject( account );
+                setAccount( account );
             }
             else
             {
-                if( _checkTrackingObject( account ) )
-                {
-                    _linkTrackingObject( account );
-                }
-                else
-                {
-                    var msg2:String = "";
-                        msg2 += "JS Object \"" + account + "\" doesn't exist in DOM\n";
-                        msg2 += "Bridge object not created.";
-                    
-                    _debug.warning( msg2 );
-                    throw new Error( msg2 );
-                }
+                var msg2:String = "";
+                    msg2 += "GA account id \"" + account + "\" is not valid\n";
+                    msg2 += "Bridge object not created.";
+                
+                _debug.warning( msg2 );
+                throw new Error( msg2 );
             }
             
         }
@@ -194,85 +98,19 @@ package com.google.analytics.v4
          */
         private function _call( functionName:String, ...args ):*
         {
-            args.unshift( "window."+ _jsContainer +"[\""+ _account +"\"]."+functionName );
-            return _proxy.call.apply( _proxy, args );
+			args.unshift( functionName );
+			// this is gaq format, you simply push an array of args onto _jsContainer (_gaq)
+			var asyncArgs = ["window."+ _jsContainer +".push", args];
+            return _proxy.call.apply( _proxy, asyncArgs );
         }
                 
         /**
          * @private
          */
-        private function _checkGAJS():Boolean
+        private function _checkAndLoadGAJS():Boolean
         {
-            return _proxy.call( _checkGAJS_js );
+            return _proxy.call( _checkAndLoadGAJS_js );
         }
-                                
-        /**
-         * @private
-         */
-        private function _checkTrackingObject( account:String ):Boolean
-        {
-            var hasObj:Boolean    = _proxy.hasProperty( account ) ;
-            var isTracker:Boolean = _proxy.hasProperty( account + "._getAccount" ) ;
-            return hasObj && isTracker ;
-        }
-        
-        /**
-         * Checks to ses if the tracking object Name passed into the functions exists in the DOM and is a real Google Analytics tracking object
-         * @private
-         */
-        private function _checkValidTrackingObject( account:String ):Boolean
-        {
-            return _proxy.call( _checkValidTrackingObject_js , account ) ;
-        }        
-        
-        /**
-         * This function creates a JS tracking object in the DOM.
-         * @private
-         */
-        private function _createTrackingObject( account:String ):void
-        {
-            _proxy.call( _createTrackingObject_js, account );
-        }        
-        
-        /**
-         * Indicates if the bridge has a reference whith the JS GA tracker.
-         */
-        public function hasGAJS():Boolean
-        {
-            return _checkGAJS();
-        }
-        
-        /**
-         * Indicates if the bridge has the passed-in tracking account.
-         */
-        public function hasTrackingAccount( account:String ):Boolean
-        {
-            if( validateAccount( account ) )
-            {
-                return _checkValidTrackingObject( account );
-            }
-            else
-            {
-                return _checkTrackingObject( account );
-            }
-        }
-        
-        /**
-         * @private
-         */        
-        private function _injectTrackingObject():void
-        {
-            _proxy.executeBlock( _injectTrackingObject_js );
-            _hasGATracker = true;
-        }
-                
-        /**
-         * @private
-         */
-        private function _linkTrackingObject( path:String ):void
-        {
-            _proxy.call( _linkTrackingObject_js , _jsContainer, path );
-        }        
         
         // -----------------------------------------------------------------------------
         // START CONFIGURATION
@@ -312,7 +150,17 @@ package com.google.analytics.v4
             */
             _debug.warning( "resetSession() not implemented" );
         }
-        
+
+        /**
+         * In ga async mode you must set the account id as an explict push onto the async queue
+         * @param account ga account number
+         */
+        public function setAccount(account:String):void
+        {
+            _debug.info( "setAccount( " + account + " )" );
+            _call( "_setAccount", account );
+        }
+
         /**
          * Sets the new sample rate.
          * If your website is particularly large and subject to heavy traffic spikes,
