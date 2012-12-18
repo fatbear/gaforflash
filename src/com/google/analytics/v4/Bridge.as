@@ -73,10 +73,10 @@ package com.google.analytics.v4
          */
         private function _call( functionName:String, ...args ):*
         {
-			args.unshift( functionName );
 			// this is gaq format, you simply push an array of args onto _jsContainer (_gaq)
-			var asyncArgs = ["window."+ _jsContainer +".push", args];
-            return _proxy.call.apply( _proxy, asyncArgs );
+			args.unshift(functionName);
+			var pushArgs:Array = ["window."+ _jsContainer +".push", args];
+            return _proxy.call.apply( _proxy, pushArgs );
         }
                 
         /**
