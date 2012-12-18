@@ -46,15 +46,6 @@ package com.google.analytics.v4
                 function()
                 {
 					window._gaq = window._gaq || [];
-                    if (typeof window._gat == "undefined" || typeof window._gat._getTracker == "undefined") {
-                        var ga = document.createElement("script");
-                        ga.type ="text/javascript";
-						ga.async = true;
-                        ga.src = ("https:" == document.location.protocol ?
-                              "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
-                        var s = document.getElementsByTagName("script")[0];
-                        s.parentNode.insertBefore(ga, s);
-                    }
                 }
             ]]>
         </script>;
@@ -75,22 +66,6 @@ package com.google.analytics.v4
             
 			// Make sure we load the ga js library
 			_checkAndLoadGAJS();
-
-			// And let's set the account
-            if( validateAccount( account ) )
-            {
-                setAccount( account );
-            }
-            else
-            {
-                var msg2:String = "";
-                    msg2 += "GA account id \"" + account + "\" is not valid\n";
-                    msg2 += "Bridge object not created.";
-                
-                _debug.warning( msg2 );
-                throw new Error( msg2 );
-            }
-            
         }
         
         /**
