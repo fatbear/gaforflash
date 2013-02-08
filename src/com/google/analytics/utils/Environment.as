@@ -28,11 +28,15 @@ package com.google.analytics.utils
     import core.uri;
     import core.version;
 
-    import flash.system.Capabilities;
-    import flash.system.Security;
-    import flash.system.System;
+import flash.display.DisplayObject;
+import flash.display.LoaderInfo;
 
-    /**
+import flash.system.Capabilities;
+import flash.system.Security;
+import flash.system.System;
+
+
+/**
      * Environment provides informations for the local environment.
      */
     public class Environment
@@ -46,6 +50,8 @@ package com.google.analytics.utils
         private var _userAgent:String;
         private var _url:String;
 
+		private var _display:DisplayObject;
+
         /**
          * Creates a new Environment instance.
          * @param url The URL of the SWF.
@@ -54,7 +60,7 @@ package com.google.analytics.utils
          * @param dom the HTMLDOM reference.
          */
         public function Environment( url:String = "", app:String = "", version:String = "",
-                                     debug:DebugConfiguration = null, dom:HTMLDOM = null )
+                                     debug:DebugConfiguration = null, dom:HTMLDOM = null, display:DisplayObject = null )
         {
             var v:core.version;
 
@@ -85,6 +91,7 @@ package com.google.analytics.utils
 
             _debug      = debug;
             _dom        = dom;
+			_display	= display;
         }
 
         /**
@@ -199,14 +206,23 @@ package com.google.analytics.utils
 
 				if (_dom.inIframe)
 				{
-					_host = _dom.parentHost.toLowerCase();
+					_host = (_dom.parentHost) ? _dom.parentHost.toLowerCase() : "unknown_host";
 				}
 				else
 				{
-					_host = _dom.host.toLowerCase();
+					_host = (_dom.host) ? _dom.host.toLowerCase() : "unknown_host";
 				}
 
-                if( _host )
+				if(_host == "unknown_host" && _display != null && _display.loaderInfo != null )
+				{
+				    try{
+						_host = new uri(_display.loaderInfo.parameters["qs_windowLocation"]).host;
+					} catch(err:Error) {
+					   _host = "";
+					}
+				}
+
+				if( _host )
                 {
                     return _host;
                 }
